@@ -125,6 +125,7 @@ def main():
 				if event.descript=="enemy_death":
 					game_control.enemy_group.add(GreenSprite())
 
+		_check_blob_bounces(game_control)
 		game_control.player_group.update()
 		game_control.enemy_group.update()
 		_update_screen(game_control)
@@ -135,8 +136,25 @@ def _update_screen(game_control):
 	game_control.screen.fill(game_control.bg_color)
 	game_control.enemy_group.draw(game_control.screen)
 	game_control.player_group.draw(game_control.screen)
-	print(pygame.sprite.spritecollide(game_control.player_group.sprite, game_control.enemy_group, False, collided=pygame.sprite.collide_circle))
+	#print(pygame.sprite.spritecollide(game_control.player_group.sprite, game_control.enemy_group, False, collided=pygame.sprite.collide_circle))
 	pygame.display.update()
-			
+
+def _check_blob_bounces(game_control):
+	blob_list = game_control.enemy_group.sprites()
+	for i in range(len(blob_list)-1):
+		for j in range(i+1, len(blob_list)):
+			if pygame.sprite.collide_circle(blob_list[i], blob_list[j]):
+				_bounce(blob_list[i],blob_list[j])
+
+def _bounce(blob1, blob2):
+	cent1 = blob1.pos
+	cent2 = blob2.pos
+	direc1 = [cent1[i]-cent2[i] for i in range(2)]
+	direc1_len = (direc1[0]**2+direc1[1]**2)**(1/2)
+	direc1 = [a/direc1_len for a in direc1]
+	direc2 = [-a for a in direc1]
+	blob1.direction = direc1
+	blob2.direction = direc2
+	
 if __name__=="__main__":
 	main()

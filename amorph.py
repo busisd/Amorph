@@ -4,13 +4,14 @@
 #Music from: https://www.bensound.com
 
 import pygame
+import pygame.gfxdraw
 import random
 import math
 
 class AmorphGameController():
 	def __init__(self):
 		self.enemy_group = pygame.sprite.Group()
-		self.player_group = pygame.sprite.Group()
+		self.player_group = pygame.sprite.GroupSingle()
 		self.player = PlayerSprite()
 		self.player_group.add(self.player)
 
@@ -26,15 +27,17 @@ class AmorphGameController():
 class PlayerSprite(pygame.sprite.Sprite):
 	def __init__(self):
 		pygame.sprite.Sprite.__init__(self)
-		self.image = pygame.Surface([30,30])
-		self.color = pygame.Color(10,10,10)
-		self.image.fill(self.color)
 		self.pos = [400,200]
 		self.size = (30,30)
+		self.radius = 14
 		self.rect = pygame.Rect(self.pos, self.size)
 		
 		self.speed = 3.5
 		
+		self.image = pygame.Surface([30,30], pygame.SRCALPHA)
+		self.color = pygame.Color(30,30,30)
+		pygame.gfxdraw.filled_circle(self.image, 15, 15, self.radius, self.color)
+
 	def update(self):
 		mouse_pos = pygame.mouse.get_pos()
 
@@ -52,10 +55,8 @@ class PlayerSprite(pygame.sprite.Sprite):
 class GreenSprite(pygame.sprite.Sprite):
 	def __init__(self):
 		pygame.sprite.Sprite.__init__(self)
-		self.image = pygame.Surface([30,30])
-		self.color = pygame.Color(0,random.randrange(100,200),0)
-		self.image.fill(self.color)
 		self.size = (30,30)
+		self.radius = 14
 		
 		self.death_event = pygame.event.Event(pygame.USEREVENT, {"descript":"enemy_death"})
 		
@@ -67,6 +68,10 @@ class GreenSprite(pygame.sprite.Sprite):
 		
 		self.pos = self._random_start_pos()
 		self.rect = pygame.Rect(self.pos, self.size)
+		
+		self.image = pygame.Surface([30, 30], pygame.SRCALPHA)
+		self.color = pygame.Color(0,random.randrange(100,200),0)
+		pygame.gfxdraw.filled_circle(self.image, 15, 15, self.radius, self.color)
 		
 	def update(self):
 		self.pos[0] += self.speed*self.direction[0]
@@ -130,7 +135,7 @@ def _update_screen(game_control):
 	game_control.screen.fill(game_control.bg_color)
 	game_control.enemy_group.draw(game_control.screen)
 	game_control.player_group.draw(game_control.screen)
-	#print(pygame.sprite.spritecollide(game_control.player_group.sprites()[0], game_control.enemy_group, False))
+	print(pygame.sprite.spritecollide(game_control.player_group.sprite, game_control.enemy_group, False, collided=pygame.sprite.collide_circle))
 	pygame.display.update()
 			
 if __name__=="__main__":

@@ -29,15 +29,15 @@ class PlayerSprite(pygame.sprite.Sprite):
 	def __init__(self):
 		pygame.sprite.Sprite.__init__(self)
 		self.pos = [400,200]
-		self.size = (30,30)
-		self.radius = 14
+		self.size = (40,40)
+		self.radius = 19
 		self.rect = pygame.Rect(self.pos, self.size)
 		
-		self.speed = 3.5
+		self.speed = 3.2
 		
-		self.image = pygame.Surface([30,30], pygame.SRCALPHA)
+		self.image = pygame.Surface(self.size, pygame.SRCALPHA)
 		self.color = pygame.Color(30,30,30)
-		pygame.gfxdraw.filled_circle(self.image, 15, 15, self.radius, self.color)
+		pygame.gfxdraw.filled_circle(self.image, int(self.size[0]/2), int(self.size[0]/2), self.radius, self.color)
 
 	def update(self):
 		mouse_pos = pygame.mouse.get_pos()
@@ -56,23 +56,23 @@ class PlayerSprite(pygame.sprite.Sprite):
 class GreenSprite(pygame.sprite.Sprite):
 	def __init__(self):
 		pygame.sprite.Sprite.__init__(self)
-		self.size = (30,30)
-		self.radius = 14
+		self.size = (40,40)
+		self.radius = 19
 		
 		self.death_event = pygame.event.Event(pygame.USEREVENT, {"descript":"blob_death"})
 		
 		angle = 2*math.pi*random.random()
 		self.direction = [math.cos(angle), math.sin(angle)]
-		self.speed = 2
+		self.speed = 2.5
 		
 		self.w, self.h = pygame.display.get_surface().get_size()
 		
 		self.pos = self._random_start_pos()
 		self.rect = pygame.Rect(self.pos, self.size)
 		
-		self.image = pygame.Surface([30, 30], pygame.SRCALPHA)
+		self.image = pygame.Surface(self.size, pygame.SRCALPHA)
 		self.color = pygame.Color(0,random.randrange(100,200),0)
-		pygame.gfxdraw.filled_circle(self.image, 15, 15, self.radius, self.color)
+		pygame.gfxdraw.filled_circle(self.image, int(self.size[0]/2), int(self.size[0]/2), self.radius, self.color)
 		
 	def update(self):
 		self.pos[0] += self.speed*self.direction[0]
@@ -110,17 +110,17 @@ class BigGreenSprite(pygame.sprite.Sprite):
 		self.death_event = pygame.event.Event(pygame.USEREVENT, {"descript":"big_blob_death"})
 		
 		self.angle = 2*math.pi*random.random()
-		self.speed = 2.5
-		self.rotate_speed = math.pi/180
+		self.speed = 2
+		self.rotate_speed = math.pi/120
 		
 		self.w, self.h = pygame.display.get_surface().get_size()
 		
 		self.pos = self._random_start_pos()
 		self.rect = pygame.Rect(self.pos, self.size)
 		
-		self.image = pygame.Surface([60, 60], pygame.SRCALPHA)
+		self.image = pygame.Surface(self.size, pygame.SRCALPHA)
 		self.color = pygame.Color(0,random.randrange(100,200),0)
-		pygame.gfxdraw.filled_circle(self.image, 30, 30, self.radius, self.color)
+		pygame.gfxdraw.filled_circle(self.image, int(self.size[0]/2), int(self.size[0]/2), self.radius, self.color)
 		
 	def update(self, player_pos):			
 		x_dif = player_pos[0] - self.pos[0] 
@@ -217,6 +217,7 @@ def main():
 					game_control.big_enemy_group.add(BigGreenSprite())
 
 		_check_blob_bounces(game_control)
+		_check_big_small_bounces(game_control)
 		game_control.player_group.update()
 		game_control.enemy_group.update()
 		game_control.big_enemy_group.update(game_control.player_group.sprite.pos)
@@ -237,9 +238,17 @@ def _check_blob_bounces(game_control):
 	for i in range(len(blob_list)-1):
 		for j in range(i+1, len(blob_list)):
 			if pygame.sprite.collide_circle(blob_list[i], blob_list[j]):
-				_bounce(blob_list[i],blob_list[j])
+				_bounce_smalls(blob_list[i],blob_list[j])
 
-def _bounce(blob1, blob2):
+def _check_big_small_bounces(game_control):
+	small_blob_list = game_control.enemy_group.sprites()
+	big_blob_list = game_control.big_enemy_group.sprites()
+	for small_blob in small_blob_list:
+		for big_blob in big_blob_list:
+			if pygame.sprite.collide_circle(small_blob, big_blob):
+				_bounce_small_big(small_blob,big_blob)
+	
+def _bounce_smalls(blob1, blob2):
 	cent1 = blob1.pos
 	cent2 = blob2.pos
 	direc1 = [cent1[i]-cent2[i] for i in range(2)]
@@ -250,6 +259,16 @@ def _bounce(blob1, blob2):
 	direc2 = [-a for a in direc1]
 	blob1.direction = direc1
 	blob2.direction = direc2
+	
+def _bounce_small_big(small_blob, big_blob):
+	cent1 = small_blob.pos
+	cent2 = big_blob.pos
+	direc = [cent1[i]-cent2[i] for i in range(2)]
+	direc_len = (direc[0]**2+direc[1]**2)**(1/2)
+	if direc_len==0:
+		direc_len=.1
+	direc = [a/direc_len for a in direc]
+	small_blob.direction = direc
 	
 if __name__=="__main__":
 	main()

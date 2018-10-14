@@ -340,7 +340,7 @@ def main():
 				if event.descript=="big_blob_death":
 					game_control.big_enemy_group.add(BigGreenSprite())
 				if event.descript=="biter_death":
-					game_control.big_enemy_group.add(BiterSprite())
+					game_control.biter_enemy_group.add(BiterSprite())
 
 
 		_check_blob_bounces(game_control)
